@@ -14,7 +14,7 @@ void print_line(int y, const std::string& line) {
 }
 
 // Fonction pour afficher un fichier en hexadécimal
-void hex_dump(std::ifstream& file, WINDOW* win, int max_lines, int start_line) {
+void hex_dump(std::ifstream& file, WINDOW* win, size_t const max_lines, int start_line) {
     constexpr int bytes_per_line = 16;
     std::vector<unsigned char> buffer(bytes_per_line);
     unsigned long offset = start_line * bytes_per_line;
@@ -62,7 +62,7 @@ void hex_dump(std::ifstream& file, WINDOW* win, int max_lines, int start_line) {
 }
 
 // Fonction pour gérer la boucle événementielle et l'affichage dynamique
-void event_loop(std::ifstream& file, WINDOW* win, int max_lines) {
+void event_loop(std::ifstream& file, WINDOW* win, size_t const max_lines) {
     int start_line = 0;    // La ligne à partir de laquelle on commence à afficher
 
     while (true) {

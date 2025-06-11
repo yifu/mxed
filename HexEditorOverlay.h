@@ -3,7 +3,7 @@
 #include "Edit.h"
 
 #include <assert.h>
-
+#include <vector>
 #include <ranges>
 
 class HexEditorOverlay {
@@ -24,7 +24,7 @@ public:
     }
 
     uint8_t readByte(size_t virtualOffset) {
-        for (auto const& edit : edits | std::views::reverse) {
+        for (auto const& edit : edits | std::ranges::views::reverse) {
             if(edit.type == EditType::INSERT) {
                 if (virtualOffset >= edit.offset + edit.data.size()) {
                     virtualOffset -= edit.data.size();
