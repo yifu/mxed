@@ -32,6 +32,10 @@ void hex_dump(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines, int
             }
         }
 
+        if (buffer.size() == 0) {
+            break;
+        }
+
         // Construction de la ligne en hexadécimal et en ASCII
         std::string hex_line;
         std::string ascii_line;
