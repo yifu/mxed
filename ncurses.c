@@ -14,6 +14,7 @@ void hex_dump(FILE *file) {
     clear();
 
     scrollok(stdscr, TRUE);
+    idlok(stdscr, TRUE);
 
     while ((bytes_read = fread(buffer, 1, LINE_WIDTH, file)) > 0) {
         // Affichage des données hexadécimales
