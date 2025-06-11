@@ -120,8 +120,8 @@ int main(int argc, char* argv[]) {
     // Ouvrir le fichier
     MMapFile file(argv[1]);
     if (!file.is_open()) {
-        std::cerr << "Erreur d'ouverture du fichier." << std::endl;
         endwin();
+        std::cerr << "Erreur d'ouverture du fichier." << std::endl;
         return EXIT_FAILURE;
     }
 
