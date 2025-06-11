@@ -71,7 +71,6 @@ void event_loop(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines) {
     int start_line = 0;    // La ligne à partir de laquelle on commence à afficher
 
     while (true) {
-        clear();  // Effacer l'écran à chaque itération
         hex_dump(editor, win, max_lines, start_line);
 
         int ch = getch();  // Attente de l'entrée de l'utilisateur
