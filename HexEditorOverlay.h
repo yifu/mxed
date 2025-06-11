@@ -12,27 +12,19 @@ public:
         : base(basePtr), size_(fileSize) {}
 
     size_t virtual_size() const {
-        size_t virtual_size {size_};
-
-        for (auto const& edit: edits) {
-            if (edit.type == EditType::INSERT) {
-                assert(virtual_size < virtual_size + edit.data.size());
-                virtual_size += edit.data.size();
-            } else if (edit.type == EditType::DELETE) {
-                assert(virtual_size >= edit.length);
-                virtual_size -= edit.length;
-            }
-        }
-
-        return virtual_size;
+        return size_;
     }
 
     void addInsert(size_t offset, const std::vector<uint8_t>& data) {
         edits.push_back({offset, EditType::INSERT, data, 0});
+        assert(size_ < size_ + data.size());
+        size_ += data.size();
     }
 
     void addDelete(size_t offset, size_t length) {
         edits.push_back({offset, EditType::DELETE, {}, length});
+        assert(size_ > size_ - length);
+        size_ -= length;
     }
 
     void addReplace(size_t offset, const std::vector<uint8_t>& data) {
