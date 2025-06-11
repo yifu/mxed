@@ -9,22 +9,26 @@
 class HexEditorOverlay {
 public:
     HexEditorOverlay(uint8_t* basePtr, size_t fileSize)
-        : base(basePtr), size_(fileSize) {}
+        : base(basePtr), file_size_{fileSize}, virtual_size_(fileSize) {}
+
+    size_t file_size() const {
+        return file_size_;
+    }
 
     size_t virtual_size() const {
-        return size_;
+        return virtual_size_;
     }
 
     void addInsert(size_t offset, const std::vector<uint8_t>& data) {
         edits.push_back({offset, EditType::INSERT, data, 0});
-        assert(size_ < size_ + data.size());
-        size_ += data.size();
+        assert(virtual_size_ < virtual_size_ + data.size());
+        virtual_size_ += data.size();
     }
 
     void addDelete(size_t offset, size_t length) {
         edits.push_back({offset, EditType::DELETE, {}, length});
-        assert(size_ > size_ - length);
-        size_ -= length;
+        assert(virtual_size_ > virtual_size_ - length);
+        virtual_size_ -= length;
     }
 
     void addReplace(size_t offset, const std::vector<uint8_t>& data) {
@@ -50,13 +54,14 @@ public:
                 }
             }
         }
-        assert(virtualOffset < size_);
+        assert(virtualOffset < virtual_size_);
         return base[virtualOffset];
     }
 
 private:
     uint8_t* base;
-    size_t size_;
+    size_t file_size_;
+    size_t virtual_size_;
     std::vector<Edit> edits;
 };
 
