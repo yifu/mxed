@@ -19,14 +19,17 @@ void print_line(int y, const std::string& line) {
 // Fonction pour afficher un fichier en hexadécimal
 void hex_dump(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines, int start_line) {
     constexpr size_t bytes_per_line = 16;
-    std::vector<unsigned char> buffer(bytes_per_line);
     unsigned long offset = start_line * bytes_per_line;
     size_t current_line = start_line;
 
     // Lecture et affichage du fichier
     while (true) {
-        for (size_t i = 0; i < buffer.size(); ++i) {
-            buffer[i] = editor.readByte(offset + i);
+        std::vector<unsigned char> buffer;
+        for (size_t i = 0; i < bytes_per_line; ++i) {
+            size_t const editor_offset {offset + i};
+            if (editor_offset < editor.size()) {
+                buffer.emplace_back(editor.readByte(editor_offset));
+            }
         }
 
         // Construction de la ligne en hexadécimal et en ASCII
@@ -115,7 +118,7 @@ int main(int argc, char* argv[]) {
     if (!file.is_open()) {
         std::cerr << "Erreur d'ouverture du fichier." << std::endl;
         endwin();
-        return 1;
+        return EXIT_FAILURE;
     }
 
     HexEditorOverlay editor(static_cast<uint8_t*>(file.data()), file.size());
