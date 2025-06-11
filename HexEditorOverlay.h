@@ -54,7 +54,7 @@ public:
                 }
             }
         }
-        assert(virtualOffset < virtual_size_);
+        assert(virtualOffset < file_size_);
         return base[virtualOffset];
     }
 
