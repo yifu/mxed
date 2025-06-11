@@ -27,7 +27,7 @@ void hex_dump(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines, int
         std::vector<unsigned char> buffer;
         for (size_t i = 0; i < bytes_per_line; ++i) {
             size_t const editor_offset {offset + i};
-            if (editor_offset < editor.size()) {
+            if (editor_offset < editor.virtual_size()) {
                 buffer.emplace_back(editor.readByte(editor_offset));
             }
         }
