@@ -113,6 +113,18 @@ void event_loop(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines) {
                 break;
             }
 
+            case KEY_PPAGE:
+            {
+                if (start_line <= max_lines) {
+                    start_line = 0;
+                } else {
+                    start_line -= max_lines;
+                }
+                hex_dump(editor, win, max_lines, start_line);
+                wrefresh(win);
+                break;
+            }
+
             case 'q':  // Quitter avec 'q'
                 return;
 
