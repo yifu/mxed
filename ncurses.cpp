@@ -71,7 +71,7 @@ void hex_dump(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines, int
 
 // Fonction pour gérer la boucle événementielle et l'affichage dynamique
 void event_loop(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines) {
-    int start_line = 0;    // La ligne à partir de laquelle on commence à afficher
+    size_t start_line = 0;    // La ligne à partir de laquelle on commence à afficher
 
     hex_dump(editor, win, max_lines, start_line);
     wrefresh(win);
@@ -84,9 +84,17 @@ void event_loop(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines) {
             case KEY_UP:  // Déplacer vers le haut
                 if (start_line > 0) {
                     start_line--;  // Remonter dans le fichier
+                    if (wscrl(win, -1) == ERR) {
+                        endwin();
+                        std::cerr << "wscrl returned an error" << std::endl;
+                        break;
+                    }
+                    size_t const first_line { start_line };
+                    size_t const offset { first_line * bytes_per_line };
+                    size_t const first_win_line { 0 };
+                    format_and_print_line(win, offset, editor, first_win_line);
+                    wrefresh(win);
                 }
-                hex_dump(editor, win, max_lines, start_line);
-                wrefresh(win);
                 break;
 
             case KEY_DOWN:  // Déplacer vers le bas
@@ -97,14 +105,11 @@ void event_loop(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines) {
                     std::cerr << "wscrl returned an error" << std::endl;
                     break;
                 }
-                size_t const last_line {start_line + max_lines - 1};
+                size_t const last_line {start_line + max_lines };
                 size_t const offset { last_line * bytes_per_line };
-                size_t const last_win_line { max_lines - 1 };
+                size_t const last_win_line { max_lines };
                 format_and_print_line(win, offset, editor, last_win_line);
                 wrefresh(win);
-
-                // hex_dump(editor, win, max_lines, start_line);
-                // wrefresh(win);
                 break;
             }
 
