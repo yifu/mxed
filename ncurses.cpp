@@ -8,6 +8,7 @@
 #include <string>
 #include <format>
 #include <ranges>
+#include <algorithm>
 
 constexpr int MAX_LINE_LENGTH = 50;  // Longueur maximale des lignes
 
@@ -70,10 +71,10 @@ void hex_dump(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines, int
 }
 
 // Fonction pour gérer la boucle événementielle et l'affichage dynamique
-void event_loop(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines) {
+void event_loop(HexEditorOverlay& editor, WINDOW* win, size_t const max_printable_lines_per_win) {
     size_t start_line = 0;    // La ligne à partir de laquelle on commence à afficher
 
-    hex_dump(editor, win, max_lines, start_line);
+    hex_dump(editor, win, max_printable_lines_per_win, start_line);
     wrefresh(win);
 
     while (true) {
@@ -89,8 +90,8 @@ void event_loop(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines) {
                         std::cerr << "wscrl returned an error" << std::endl;
                         break;
                     }
-                    size_t const first_line { start_line };
-                    size_t const offset { first_line * bytes_per_line };
+                    size_t const first_printed_line { start_line };
+                    size_t const offset { first_printed_line * bytes_per_line };
                     size_t const first_win_line { 0 };
                     format_and_print_line(win, offset, editor, first_win_line);
                     wrefresh(win);
@@ -105,9 +106,9 @@ void event_loop(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines) {
                     std::cerr << "wscrl returned an error" << std::endl;
                     break;
                 }
-                size_t const last_line {start_line + max_lines };
-                size_t const offset { last_line * bytes_per_line };
-                size_t const last_win_line { max_lines };
+                size_t const last_printed_line { start_line + max_printable_lines_per_win };
+                size_t const offset { last_printed_line * bytes_per_line };
+                size_t const last_win_line { max_printable_lines_per_win - 1 };
                 format_and_print_line(win, offset, editor, last_win_line);
                 wrefresh(win);
                 break;
@@ -115,12 +116,25 @@ void event_loop(HexEditorOverlay& editor, WINDOW* win, size_t const max_lines) {
 
             case KEY_PPAGE:
             {
-                if (start_line <= max_lines) {
+                if (start_line <= max_printable_lines_per_win) {
                     start_line = 0;
                 } else {
-                    start_line -= max_lines;
+                    start_line -= max_printable_lines_per_win;
                 }
-                hex_dump(editor, win, max_lines, start_line);
+                hex_dump(editor, win, max_printable_lines_per_win, start_line);
+                wrefresh(win);
+                break;
+            }
+
+            case KEY_NPAGE:
+            {
+                size_t const total_lines_in_the_file {(editor.virtual_size() + bytes_per_line - 1) / bytes_per_line};
+                if (total_lines_in_the_file < max_printable_lines_per_win) {
+                    break;
+                }
+                size_t const last_startable_line {total_lines_in_the_file - max_printable_lines_per_win};
+                start_line = std::min(start_line + max_printable_lines_per_win, last_startable_line);
+                hex_dump(editor, win, max_printable_lines_per_win, start_line);
                 wrefresh(win);
                 break;
             }
@@ -172,7 +186,7 @@ int main(int argc, char* argv[]) {
     HexEditorOverlay editor(static_cast<uint8_t*>(file.data()), file.size());
 
     // Boucle d'événements
-    event_loop(editor, win, max_y - 1);
+    event_loop(editor, win, max_y);
 
     // Nettoyage
     endwin();
