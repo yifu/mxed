@@ -139,6 +139,25 @@ void event_loop(HexEditorOverlay& editor, WINDOW* win, size_t const max_printabl
                 break;
             }
 
+            case KEY_HOME:
+            {
+                start_line = 0;
+                hex_dump(editor, win, max_printable_lines_per_win, start_line);
+                wrefresh(win);
+                break;
+            }
+
+            case KEY_END:
+            {
+                size_t const total_lines_in_the_file {(editor.virtual_size() + bytes_per_line - 1) / bytes_per_line};
+                if (total_lines_in_the_file > max_printable_lines_per_win) {
+                    start_line = total_lines_in_the_file - max_printable_lines_per_win;
+                }
+                hex_dump(editor, win, max_printable_lines_per_win, start_line);
+                wrefresh(win);
+                break;
+            }
+
             case 'q':  // Quitter avec 'q'
                 return;
 
