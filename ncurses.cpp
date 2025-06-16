@@ -175,6 +175,9 @@ int main(int argc, char* argv[]) {
 
     // Initialisation de ncurses
     initscr();
+    start_color();
+    use_default_colors();
+    init_pair(1, -1, -1);
     raw();
     keypad(stdscr, TRUE);
     noecho();
