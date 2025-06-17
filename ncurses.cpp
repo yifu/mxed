@@ -10,8 +10,6 @@
 #include <ranges>
 #include <algorithm>
 
-constexpr int MAX_LINE_LENGTH = 50;  // Longueur maximale des lignes
-
 struct Windows {
     WINDOW *offsets_win;
     WINDOW *hex_win;
@@ -19,7 +17,20 @@ struct Windows {
 };
 
 void print_in_window(WINDOW* win, int y, std::string const& line) {
-    mvwprintw(win, y, 0, "%-*s", MAX_LINE_LENGTH, line.c_str());
+    int max_y, max_x;
+    getmaxyx(win, max_y, max_x);
+
+    if (y >= max_y) {
+        endwin();
+        std::cerr << "Out of lines access" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    if (mvwprintw(win, y, 0, "%.*s", max_x-1, line.c_str()) == ERR) {
+        endwin();
+        std::cerr << "mvwprintw() failed" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }
 
 constexpr int bytes_per_line {16};
@@ -60,16 +71,15 @@ void format_and_print_lines(Windows &windows, const size_t offset, HexEditorOver
 
 // Fonction pour afficher un fichier en hexadécimal
 void hex_dump(HexEditorOverlay& editor, Windows &windows, size_t const max_lines, int start_line) {
-    size_t offset = start_line * bytes_per_line;
     size_t current_line = start_line;
 
     // Lecture et affichage du fichier
-    while (true) {
+    for (size_t i = 0; i < max_lines; ++i) {
+        size_t const offset = start_line + i * bytes_per_line;
         const size_t current_win_line {current_line - start_line};
 
         format_and_print_lines(windows, offset, editor, current_win_line);
 
-        offset += bytes_per_line;
         ++current_line;
         // Si on atteint la fin de l'écran, on attend une entrée
         if (current_win_line >= max_lines) {
@@ -217,6 +227,7 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     keypad(windows.offsets_win, TRUE);
+    box(windows.offsets_win, 0, 0);
 
     windows.hex_win = newwin(max_y, max_x_hex_win, 0, max_x_offsets_win);
     if (scrollok(windows.hex_win, TRUE) == ERR) {
@@ -225,6 +236,7 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     keypad(windows.hex_win, TRUE);
+    box(windows.hex_win, 0, 0);
 
     windows.ascii_win = newwin(max_y, max_x_ascii_win, 0, max_x_offsets_win + max_x_hex_win);
     if (scrollok(windows.ascii_win, TRUE) == ERR) {
@@ -233,6 +245,7 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     keypad(windows.ascii_win, TRUE);
+    box(windows.ascii_win, 0, 0);
 
     // Ouvrir le fichier
     MMapFile file(argv[1]);
